@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.env/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+Thumbs.db
+.DS_Store
+
+# Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+
+# Model files
+backend/weights/*.pt
+backend/weights/*.pth
+
+# Docker
+.dockerignore
+
+# Testing
+.coverage
+.coverage.*
+.tox/
+.nox/
+.pytest_cache/
+
+# Documentation
+/build/
+/docs/_build/
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+/temp/
