@@ -66,10 +66,19 @@ const router = createRouter({
           component: () => import('@/views/ProfileView.vue')
         },
         {
-          path: '/batch',
+          path: 'batch',
           name: 'BatchDetection',
-          component: () => import('@/views/BatchDetectionView.vue'),
-          meta: { requiresAuth: true }
+          component: () => import('@/views/BatchDetectionView.vue')
+        },
+        {
+          path: 'announcements',
+          name: 'Announcements',
+          component: () => import('@/views/AnnouncementView.vue')
+        },
+        {
+          path: 'feedback',
+          name: 'Feedback',
+          component: () => import('@/views/FeedbackView.vue')
         }
       ]
     }

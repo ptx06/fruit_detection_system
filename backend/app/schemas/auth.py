@@ -20,3 +20,5 @@ class UserInfo(BaseModel):
     username: str
     role: str
     created_at: str
+    bio: Optional[str] = ""
+    avatar: Optional[str] = ""

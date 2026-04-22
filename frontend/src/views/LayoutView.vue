@@ -26,6 +26,14 @@
           <el-icon><User /></el-icon>
           <span>用户管理</span>
         </el-menu-item>
+        <el-menu-item index="/announcements">
+          <el-icon><Bell /></el-icon>
+          <span>通知公告</span>
+        </el-menu-item>
+        <el-menu-item index="/feedback">
+          <el-icon><ChatDotRound /></el-icon>
+          <span>反馈中心</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -62,8 +70,9 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { DataBoard, Camera, Document, User, ArrowDown } from '@element-plus/icons-vue'
+import { DataBoard, Camera, Document, User, ArrowDown, Bell, ChatDotRound } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
+import AnnouncementSidebar from '@/components/AnnouncementSidebar.vue'
 
 const route = useRoute()
 const router = useRouter()

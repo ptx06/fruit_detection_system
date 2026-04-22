@@ -88,7 +88,9 @@ def get_current_user(
         "id": user.id,
         "username": user.username,
         "role": user.role,
-        "created_at": user.created_at.isoformat()
+        "created_at": user.created_at.isoformat(),
+        "bio": user.bio or "",
+        "avatar": user.avatar or ""
     }
 
 

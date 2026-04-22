@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum, TIMESTAMP
+from sqlalchemy import Column, Integer, String, Enum, TIMESTAMP, Text
 from sqlalchemy.sql import func
 from app.database import Base
 from app.models import user, detection  # 添加 detection
@@ -9,5 +9,7 @@ class User(Base):
     username = Column(String(50), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     role = Column(Enum('admin', 'user'), default='user')
+    bio = Column(Text, nullable=True)
+    avatar = Column(String(255), nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())

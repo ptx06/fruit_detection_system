@@ -7,19 +7,40 @@
           <template #header>
             <span>个人信息</span>
           </template>
+          
+          <!-- 头像上传 -->
+          <div class="avatar-section">
+            <el-avatar :size="120" :src="userInfo.avatar || defaultAvatar" class="avatar">
+              {{ userInfo.username?.charAt(0).toUpperCase() }}
+            </el-avatar>
+            <el-button type="primary" size="small" @click="avatarDialogVisible = true">更换头像</el-button>
+          </div>
+          
+          <el-divider />
+          
+          <!-- 个人信息 -->
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="用户名">{{ authStore.userInfo?.username }}</el-descriptions-item>
+            <el-descriptions-item label="用户名">{{ userInfo.username }}</el-descriptions-item>
             <el-descriptions-item label="角色">
-              <el-tag :type="authStore.userInfo?.role === 'admin' ? 'danger' : 'info'">
-                {{ authStore.userInfo?.role }}
+              <el-tag :type="userInfo.role === 'admin' ? 'danger' : 'info'">
+                {{ userInfo.role }}
               </el-tag>
             </el-descriptions-item>
             <el-descriptions-item label="注册时间">
-              {{ authStore.userInfo?.created_at ? new Date(authStore.userInfo.created_at).toLocaleString() : '-' }}
+              {{ userInfo.created_at ? new Date(userInfo.created_at).toLocaleString() : '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="个人简介">
+              <span v-if="userInfo.bio">{{ userInfo.bio }}</span>
+              <span v-else class="empty-bio">暂无简介</span>
             </el-descriptions-item>
           </el-descriptions>
+          
           <el-divider />
-          <el-button type="primary" @click="passwordDialogVisible = true">修改密码</el-button>
+          
+          <div class="action-buttons">
+            <el-button type="primary" @click="editInfoDialogVisible = true">编辑资料</el-button>
+            <el-button type="warning" @click="passwordDialogVisible = true">修改密码</el-button>
+          </div>
         </el-card>
       </el-col>
 
@@ -76,6 +97,42 @@
         <el-button type="primary" @click="handleChangePassword" :loading="changing">确定</el-button>
       </template>
     </el-dialog>
+
+    <!-- 编辑资料对话框 -->
+    <el-dialog v-model="editInfoDialogVisible" title="编辑资料" width="400px">
+      <el-form :model="editForm" :rules="editRules" ref="editFormRef" label-width="80px">
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="editForm.username" placeholder="请输入用户名" />
+        </el-form-item>
+        <el-form-item label="个人简介" prop="bio">
+          <el-input v-model="editForm.bio" type="textarea" rows="3" placeholder="请输入个人简介" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editInfoDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleEditInfo" :loading="editing">确定</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 更换头像对话框 -->
+    <el-dialog v-model="avatarDialogVisible" title="更换头像" width="400px">
+      <el-upload
+        class="avatar-uploader"
+        action="#"
+        :auto-upload="false"
+        :on-change="handleAvatarChange"
+        :show-file-list="true"
+        :before-upload="beforeAvatarUpload"
+        accept="image/*"
+      >
+        <img v-if="userInfo.avatar" :src="userInfo.avatar" class="avatar-preview" />
+        <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+      </el-upload>
+      <template #footer>
+        <el-button @click="avatarDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleUploadAvatar" :loading="uploading">上传</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -84,8 +141,37 @@ import { ref, reactive, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import client from '@/api/client'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 
 const authStore = useAuthStore()
+const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+
+// 用户信息
+const userInfo = ref({
+  username: authStore.userInfo?.username || '',
+  role: authStore.userInfo?.role || '',
+  created_at: authStore.userInfo?.created_at || '',
+  bio: authStore.userInfo?.bio || '',
+  avatar: authStore.userInfo?.avatar || ''
+})
+
+// 编辑资料相关
+const editInfoDialogVisible = ref(false)
+const editing = ref(false)
+const editFormRef = ref<FormInstance>()
+const editForm = reactive({
+  username: '',
+  bio: ''
+})
+
+const editRules: FormRules = {
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }]
+}
+
+// 头像上传相关
+const avatarDialogVisible = ref(false)
+const uploading = ref(false)
+const avatarFile = ref<File | null>(null)
 
 interface Stats {
   total_detections: number
@@ -161,8 +247,89 @@ const handleChangePassword = async () => {
   })
 }
 
+// 编辑资料
+const handleEditInfo = async () => {
+  if (!editFormRef.value) return
+  await editFormRef.value.validate(async (valid) => {
+    if (!valid) return
+    editing.value = true
+    try {
+      const { data } = await client.put('/profile', editForm)
+      ElMessage.success('资料修改成功')
+      editInfoDialogVisible.value = false
+      // 更新本地用户信息
+      userInfo.value = {
+        ...userInfo.value,
+        ...data
+      }
+      // 更新 authStore 中的用户信息
+      authStore.updateUserInfo(data)
+    } catch (error: any) {
+      ElMessage.error(error.response?.data?.detail || '修改失败')
+    } finally {
+      editing.value = false
+    }
+  })
+}
+
+// 头像上传
+const handleAvatarChange = (file: any) => {
+  avatarFile.value = file.raw
+}
+
+const beforeAvatarUpload = (file: any) => {
+  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
+  const isLt2M = file.size / 1024 / 1024 < 2
+  if (!isJpgOrPng) {
+    ElMessage.error('只能上传 JPG/PNG 图片')
+  }
+  if (!isLt2M) {
+    ElMessage.error('图片大小不能超过 2MB')
+  }
+  return isJpgOrPng && isLt2M
+}
+
+const handleUploadAvatar = async () => {
+  if (!avatarFile.value) {
+    ElMessage.warning('请选择图片')
+    return
+  }
+  uploading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('avatar', avatarFile.value)
+    const { data } = await client.post('/profile/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    console.log('上传成功，返回的头像路径:', data.avatar)
+    ElMessage.success('头像上传成功')
+    avatarDialogVisible.value = false
+    // 更新本地用户信息
+    userInfo.value.avatar = data.avatar
+    console.log('更新后的userInfo.avatar:', userInfo.value.avatar)
+    // 更新 authStore 中的用户信息
+    authStore.updateUserInfo({ avatar: data.avatar })
+  } catch (error: any) {
+    console.error('上传失败:', error)
+    ElMessage.error(error.response?.data?.detail || '上传失败')
+  } finally {
+    uploading.value = false
+  }
+}
+
+// 打开编辑资料对话框时初始化表单
+const openEditDialog = () => {
+  editForm.username = userInfo.value.username
+  editForm.bio = userInfo.value.bio || ''
+  editInfoDialogVisible.value = true
+}
+
 onMounted(() => {
   fetchStats()
+  // 监听编辑资料对话框打开
+  editInfoDialogVisible.value = false
 })
 </script>
 
@@ -170,7 +337,61 @@ onMounted(() => {
 .profile-container {
   padding: 20px;
 }
+
 .stat-row {
   margin-bottom: 20px;
+}
+
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  margin-bottom: 15px;
+  border: 2px solid #409eff;
+}
+
+.avatar-preview {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.avatar-uploader {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.avatar-uploader:hover {
+  border-color: #409eff;
+}
+
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.empty-bio {
+  color: #909399;
+  font-style: italic;
 }
 </style>
