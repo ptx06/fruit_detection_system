@@ -1,9 +1,4 @@
-import axios from 'axios'
-
-const api = axios.create({
-  baseURL: '/api/v1',
-  timeout: 30000,
-})
+import client from './client'
 
 export interface DetectionResult {
   bbox: number[]
@@ -27,7 +22,7 @@ export interface DetectResponse {
 export async function detectFruitMaturity(file: File): Promise<DetectResponse> {
   const formData = new FormData()
   formData.append('file', file)
-  const { data } = await api.post<DetectResponse>('/detect', formData, {
+  const { data } = await client.post<DetectResponse>('/detect', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
   return data

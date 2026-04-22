@@ -20,10 +20,17 @@
 
     <el-row :gutter="20" v-if="result">
       <el-col :span="12">
-        <el-card header="原始图片">
-          <div class="image-wrapper">
-            <img :src="'data:image/jpeg;base64,' + result.data.image_base64" alt="原图" />
-            <!-- 可选：在Canvas上绘制检测框，这里为了简洁直接展示原图 -->
+        <el-card header="检测结果可视化">
+          <div v-if="result.data.image_base64 && result.data.detections">
+            <AnnotatedImage
+              :key="result.data.image_base64"
+              :imageSrc="'data:image/jpeg;base64,' + result.data.image_base64"
+              :detections="result.data.detections"
+              :maxWidth="500"
+            />
+          </div>
+          <div v-else>
+            <img :src="'data:image/jpeg;base64,' + result.data.image_base64" alt="原图" style="max-width: 100%; max-height: 500px;" />
           </div>
         </el-card>
       </el-col>
@@ -66,6 +73,7 @@ import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UploadFilled, Loading } from '@element-plus/icons-vue'
 import { detectFruitMaturity, type DetectResponse } from '../api/detection'
+import AnnotatedImage from '@/components/AnnotatedImage.vue'
 
 const loading = ref(false)
 const result = ref<DetectResponse | null>(null)
