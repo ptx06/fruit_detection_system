@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import timedelta
+from pydantic import BaseModel
 
 from app.database import get_db
 from app.models.user import User
@@ -8,7 +9,12 @@ from app.schemas.auth import UserRegister, UserLogin, TokenResponse, UserInfo
 from app.utils.auth import get_password_hash, verify_password, create_access_token, decode_access_token, \
     ACCESS_TOKEN_EXPIRE_MINUTES
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app.utils.logger_audit import log_action
+from fastapi import Request
 
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
 router = APIRouter(prefix="/auth", tags=["认证"])
 security = HTTPBearer()
 
@@ -40,7 +46,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
 
 # 登录
 @router.post("/login", response_model=TokenResponse)
-def login(user_data: UserLogin, db: Session = Depends(get_db)):
+def login(user_data: UserLogin, db: Session = Depends(get_db), request:Request = None):
     # 查找用户
     user = db.query(User).filter(User.username == user_data.username).first()
     if not user:
@@ -57,7 +63,7 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
         "username": user.username,
         "role": user.role
     }
-
+    log_action(user.id, user.username, "登录", f"用户登录成功", request)
 
 # 获取当前用户信息（需要认证）
 @router.get("/me", response_model=UserInfo)
@@ -100,3 +106,30 @@ async def get_current_user_dependency(
     if not user:
         raise HTTPException(status_code=401, detail="用户不存在")
     return user
+
+# 依赖项：要求管理员权限
+async def require_admin(current_user: User = Depends(get_current_user_dependency)) -> User:
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="需要管理员权限")
+    return current_user
+
+
+# 修改密码
+@router.post("/change-password")
+def change_password(
+    req: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user_dependency),
+    db: Session = Depends(get_db),
+    request: Request = None
+):
+    # 验证旧密码
+    if not verify_password(req.old_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="旧密码错误")
+    
+    # 更新密码
+    current_user.password_hash = get_password_hash(req.new_password)
+    db.commit()
+    
+    # 记录日志
+    log_action(current_user.id, current_user.username, "修改密码", "用户修改了密码", request)
+    return {"message": "密码修改成功"}

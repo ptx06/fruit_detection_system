@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Enum, TIMESTAMP
 from sqlalchemy.sql import func
 from app.database import Base
-
+from app.models import user, detection  # 添加 detection
 class User(Base):
     __tablename__ = "users"
 

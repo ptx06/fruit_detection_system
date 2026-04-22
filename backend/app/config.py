@@ -18,6 +18,37 @@ MATURITY_LABELS = {
     "orange": ["freshoranges", "rottenoranges", "unripe orange"]
 }
 
+# 模型信息配置
+MODEL_INFO = {
+    "detection": {
+        "name": "YOLOv11",
+        "version": "8.3.88",
+        "accuracy": "mAP@0.5: 0.92",
+        "last_updated": "2026-04-20",
+        "description": "水果目标检测模型，支持苹果、香蕉、橘子"
+    },
+    "classification": {
+        "apple": {
+            "name": "MobileNetV2",
+            "version": "1.0",
+            "accuracy": "96.5%",
+            "last_updated": "2026-04-18"
+        },
+        "banana": {
+            "name": "MobileNetV2",
+            "version": "1.0",
+            "accuracy": "94.2%",
+            "last_updated": "2026-04-18"
+        },
+        "orange": {
+            "name": "MobileNetV2",
+            "version": "1.0",
+            "accuracy": "95.8%",
+            "last_updated": "2026-04-18"
+        }
+    }
+}
+
 NUM_CLASSES = 3   # 所有分类器都是三分类
 DEVICE = "cuda" if os.environ.get("CUDA_VISIBLE_DEVICES") else "cpu"
 LOG_LEVEL = "INFO"

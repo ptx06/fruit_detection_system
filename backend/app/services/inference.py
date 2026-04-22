@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 from app.models.detector import YOLODetector
 from app.models.classifier import FruitMaturityClassifier
 from app.utils.image_utils import crop_region, preprocess_for_classifier
+from app.utils.settings_manager import get_detection_params
 
 class InferenceService:
     def __init__(self):

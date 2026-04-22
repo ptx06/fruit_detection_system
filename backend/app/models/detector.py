@@ -2,6 +2,7 @@ from ultralytics import YOLO
 import numpy as np
 from typing import List, Tuple
 from app.config import DETECTION_MODEL_PATH, DEVICE
+from app.utils.settings_manager import get_detection_params
 
 class YOLODetector:
     def __init__(self):
@@ -10,11 +11,14 @@ class YOLODetector:
         # 类别映射，需根据你的训练数据调整
         self.class_names = {0: "apple", 1: "banana", 2: "orange"}
 
-    def detect(self, image: np.ndarray, conf_thres=0.25, iou_thres=0.45) -> List[dict]:
+    def detect(self, image: np.ndarray) -> List[dict]:
         """
         对输入图像进行目标检测
         返回: 列表，每个元素包含 bbox, confidence, class_id, class_name
         """
+        params = get_detection_params()
+        conf_thres = params.get("conf_threshold", 0.25)
+        iou_thres = params.get("iou_threshold", 0.45)
         results = self.model(image, conf=conf_thres, iou=iou_thres, verbose=False)
         detections = []
         if results[0].boxes is not None:
