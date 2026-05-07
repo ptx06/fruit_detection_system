@@ -97,22 +97,43 @@ async def upload_avatar(
     db: Session = Depends(get_db)
 ):
     """上传头像"""
-    # 检查文件类型
-    if not avatar.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="只能上传图片文件")
+    # 读取文件内容
+    content = await avatar.read()
     
-    # 生成文件名
+    # 1. 文件大小限制（2MB）
+    MAX_FILE_SIZE = 2 * 1024 * 1024
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="文件大小不能超过 2MB")
+    
+    # 2. 通过 Magic Number 验证文件类型并确定扩展名
+    # JPEG: \xff\xd8\xff, PNG: \x89PNG\r\n\x1a\n, GIF: GIF87a/GIF89a
+    magic_number = content[:8]
+    if magic_number.startswith(b'\xff\xd8\xff'):
+        file_ext = 'jpg'
+    elif magic_number.startswith(b'\x89PNG'):
+        file_ext = 'png'
+    elif magic_number.startswith(b'GIF87a') or magic_number.startswith(b'GIF89a'):
+        file_ext = 'gif'
+    else:
+        raise HTTPException(status_code=400, detail="无效的图片文件格式")
+    
+    # 3. 生成安全的文件名（使用 uuid 避免路径遍历攻击）
     import uuid
-    file_ext = avatar.filename.split(".")[-1]
-    file_name = f"{current_user.id}_{uuid.uuid4()}.{file_ext}"
+    file_name = f"{current_user.id}_{uuid.uuid4().hex}.{file_ext}"
     file_path = UPLOAD_DIR / file_name
     
-    # 保存文件
+    # 4. 删除旧头像（如果存在）
+    if current_user.avatar:
+        old_avatar_name = current_user.avatar.split("/")[-1]
+        old_avatar_path = UPLOAD_DIR / old_avatar_name
+        if old_avatar_path.exists():
+            old_avatar_path.unlink()
+    
+    # 5. 保存文件
     with open(file_path, "wb") as f:
-        content = await avatar.read()
         f.write(content)
     
-    # 更新用户头像路径
+    # 6. 更新用户头像路径
     avatar_url = f"/uploads/avatars/{file_name}"
     current_user.avatar = avatar_url
     db.commit()

@@ -17,14 +17,18 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
+      path: '/dashboard',
+      redirect: '/console'
+    },
+    {
       path: '/',
       component: () => import('@/views/LayoutView.vue'),
-      redirect: '/dashboard',
+      redirect: '/console',
       meta: { requiresAuth: true },
       children: [
         {
-          path: 'dashboard',
-          name: 'Dashboard',
+          path: 'console',
+          name: 'Console',
           component: () => import('@/views/DashboardView.vue')
         },
         {
@@ -79,6 +83,11 @@ const router = createRouter({
           path: 'feedback',
           name: 'Feedback',
           component: () => import('@/views/FeedbackView.vue')
+        },
+        {
+          path: 'ai-summary',
+          name: 'AiSummary',
+          component: () => import('@/views/AiSummaryView.vue')
         }
       ]
     }
@@ -96,7 +105,7 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {
     next('/login')
   } else if (to.meta.requiresAdmin && authStore.userInfo?.role !== 'admin') {
-    next('/dashboard')
+    next('/console')
   } else {
     next()
   }

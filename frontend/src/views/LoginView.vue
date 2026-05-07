@@ -53,8 +53,11 @@ const handleLogin = async () => {
       authStore.setUserInfo(userInfo)
       ElMessage.success('登录成功')
       router.push('/dashboard')
-    } catch (error) {
-      // 错误已在拦截器处理
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 
+                       error.response?.data?.message || 
+                       '登录失败，请检查用户名和密码'
+      ElMessage.error(errorMsg)
     } finally {
       loading.value = false
     }

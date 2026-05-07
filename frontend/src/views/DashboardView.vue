@@ -135,6 +135,7 @@ import { getDashboardStats, type DashboardStats } from '@/api/dashboard'
 import * as echarts from 'echarts'
 import type { EChartsOption } from 'echarts'
 import { getModelInfo, type ModelInfo } from '@/api/system'
+import { translateFruitType, translateMaturity } from '@/utils/translator'
 
 const modelInfo = ref<ModelInfo>({
   detection: { name: '', version: '', accuracy: '', last_updated: '', description: '' },
@@ -198,7 +199,7 @@ const updateCharts = () => {
       series: [{
         type: 'pie',
         radius: '50%',
-        data: Object.entries(stats.value.fruit_distribution).map(([name, value]) => ({ name, value }))
+        data: Object.entries(stats.value.fruit_distribution).map(([name, value]) => ({ name: translateFruitType(name), value }))
       }]
     }
     fruitChart.setOption(fruitOption)
@@ -211,7 +212,7 @@ const updateCharts = () => {
       series: [{
         type: 'pie',
         radius: '50%',
-        data: Object.entries(stats.value.maturity_distribution).map(([name, value]) => ({ name, value }))
+        data: Object.entries(stats.value.maturity_distribution).map(([name, value]) => ({ name: translateMaturity(name), value }))
       }]
     }
     maturityChart.setOption(maturityOption)

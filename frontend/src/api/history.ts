@@ -12,8 +12,26 @@ export interface HistoryDetail extends HistoryRecord {
   image_base64: string | null
 }
 
-export async function getHistoryList(skip = 0, limit = 20): Promise<HistoryRecord[]> {
-  const { data } = await client.get('/history', { params: { skip, limit } })
+export interface HistoryListResponse {
+  records: HistoryRecord[]
+  total: number
+}
+
+export interface HistoryFilter {
+  keyword?: string
+  fruit_type?: string
+  maturity?: string
+  start_date?: string
+  end_date?: string
+}
+
+export async function getHistoryList(
+  skip = 0,
+  limit = 20,
+  filter?: HistoryFilter
+): Promise<HistoryListResponse> {
+  const params = { skip, limit, ...filter }
+  const { data } = await client.get('/history', { params })
   return data
 }
 

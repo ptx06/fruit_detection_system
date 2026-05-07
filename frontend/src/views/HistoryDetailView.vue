@@ -23,8 +23,16 @@
               <el-descriptions-item label="水果数量">{{ detail.fruit_count }}</el-descriptions-item>
             </el-descriptions>
             <el-table :data="detail.result_json" style="margin-top: 20px">
-              <el-table-column prop="fruit_type" label="种类" width="100" />
-              <el-table-column prop="maturity" label="成熟度" />
+              <el-table-column label="种类" width="100">
+                <template #default="{ row }">
+                  {{ translateFruitType(row.fruit_type) }}
+                </template>
+              </el-table-column>
+              <el-table-column label="成熟度">
+                <template #default="{ row }">
+                  {{ translateMaturity(row.maturity) }}
+                </template>
+              </el-table-column>
               <el-table-column prop="fruit_conf" label="检测置信度">
                 <template #default="{ row }">
                   {{ (row.fruit_conf * 100).toFixed(1) }}%
@@ -49,6 +57,7 @@ import { useRoute } from 'vue-router'
 import { getHistoryDetail, type HistoryDetail } from '@/api/history'
 import { ElMessage } from 'element-plus'
 import AnnotatedImage from '@/components/AnnotatedImage.vue'
+import { translateFruitType, translateMaturity } from '@/utils/translator'
 
 const route = useRoute()
 const loading = ref(false)

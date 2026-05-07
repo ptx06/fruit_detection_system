@@ -40,15 +40,19 @@
             未检测到水果目标
           </div>
           <el-table :data="result.data.detections" stripe style="width: 100%">
-            <el-table-column prop="fruit_type" label="水果种类" width="100" />
+            <el-table-column label="水果种类" width="100">
+              <template #default="{ row }">
+                {{ translateFruitType(row.fruit_type) }}
+              </template>
+            </el-table-column>
             <el-table-column prop="fruit_conf" label="检测置信度" width="120">
               <template #default="{ row }">
                 {{ (row.fruit_conf * 100).toFixed(1) }}%
               </template>
             </el-table-column>
-            <el-table-column prop="maturity" label="成熟度" width="100">
+            <el-table-column label="成熟度" width="100">
               <template #default="{ row }">
-                <el-tag :type="getMaturityTagType(row.maturity_id)">{{ row.maturity }}</el-tag>
+                <el-tag :type="getMaturityTagType(row.maturity_id)">{{ translateMaturity(row.maturity) }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column prop="maturity_conf" label="分类置信度" width="120">
@@ -74,6 +78,7 @@ import { ElMessage } from 'element-plus'
 import { UploadFilled, Loading } from '@element-plus/icons-vue'
 import { detectFruitMaturity, type DetectResponse } from '../api/detection'
 import AnnotatedImage from '@/components/AnnotatedImage.vue'
+import { translateFruitType, translateMaturity } from '@/utils/translator'
 
 const loading = ref(false)
 const result = ref<DetectResponse | null>(null)

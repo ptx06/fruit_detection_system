@@ -72,10 +72,15 @@ const handleRegister = async () => {
         role: res.role,
         created_at: ''
       })
-      ElMessage.success('注册成功')
-      router.push('/dashboard')
-    } catch (error) {
-      // 已处理
+      ElMessage.success('注册成功，即将跳转到首页')
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 1500)
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || 
+                       error.response?.data?.message || 
+                       '注册失败，请稍后重试'
+      ElMessage.error(errorMsg)
     } finally {
       loading.value = false
     }

@@ -10,9 +10,9 @@
         text-color="#bfcbd9"
         active-text-color="#409eff"
       >
-        <el-menu-item index="/dashboard">
+        <el-menu-item index="/console">
           <el-icon><DataBoard /></el-icon>
-          <span>仪表盘</span>
+          <span>控制台</span>
         </el-menu-item>
         <el-menu-item index="/detection">
           <el-icon><Camera /></el-icon>
@@ -44,7 +44,7 @@
         <div class="header-right">
           <el-dropdown @command="handleCommand">
             <span class="user-info">
-              <el-avatar :size="32" icon="UserFilled" />
+              <el-avatar :size="32" :src="authStore.userInfo?.avatar" icon="UserFilled" />
               <span class="username">{{ authStore.userInfo?.username }}</span>
               <el-icon><ArrowDown /></el-icon>
             </span>
